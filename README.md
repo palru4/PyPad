@@ -56,6 +56,10 @@ PyPad/
 ## 🛠️ How to Run
 
 ```bash
+git clone https://github.com/sundae0/PyPad
+
+cd PyPad
+
 python main.py
 ```
 
