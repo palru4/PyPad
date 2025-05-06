@@ -6,10 +6,10 @@ from features.shortcut_key import bind_shortcuts
 from ui.context_menu import setup_context_menu
 from dialogs.exit_dialog import on_exit
 
-class NotepadApp:
+class PyPad:
     def __init__(self, root):
         self.root = root
-        self.root.title("Notepad Python")
+        self.root.title("PyPad")
         self.root.geometry("800x600")
         root.protocol("WM_DELETE_WINDOW", lambda: on_exit(root))
 
@@ -98,7 +98,7 @@ class NotepadApp:
     def new_file(self):
         self.text_area.delete(1.0, tk.END)
         self.file_path = None
-        self.root.title("Notepad Python - Untitled")
+        self.root.title("PyPad - Untitled")
         self._update_status_bar()
 
     def open_file(self):
@@ -110,7 +110,7 @@ class NotepadApp:
                     self.text_area.delete(1.0, tk.END)
                     self.text_area.insert(tk.END, content)
                 self.file_path = file_path
-                self.root.title(f"Notepad Python - {file_path}")
+                self.root.title(f"PyPad - {file_path}")
                 self._update_status_bar()
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to open file: {e}")
@@ -131,7 +131,7 @@ class NotepadApp:
         if file_path:
             self.file_path = file_path
             self.save_file()
-            self.root.title(f"Notepad Python - {file_path}")
+            self.root.title(f"PyPad - {file_path}")
 
     def toggle_dark_mode(self):
         if self.is_dark_mode:
