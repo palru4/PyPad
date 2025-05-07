@@ -45,8 +45,7 @@ git clone https://github.com/sundae0/PyPad
 cd PyPad
 
 # Install required dependencies
-pip install -r requirements.txt  # If you have one, or:
-pip install pygments
+pip install -r requirements.txt
 
 # Run the application
 python main.py
