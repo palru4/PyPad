@@ -1,16 +1,28 @@
 📝 PyPad
 A modern, lightweight Notepad clone built with Python and Tkinter, featuring syntax highlighting, dark mode, auto-save, multiple tabs, and a sleek Windows-style font dialog.
+
 🚀 Features
+
 🎨 Syntax Highlighting for multiple programming languages
+
 🌗 Dark/Light Theme Toggle with theme-aware syntax highlighting
+
 💾 Auto-Save support to prevent data loss
+
 🗂️ Multiple Tabs with file management
+
 🔠 Windows-Style Font Dialog with live preview
+
 📜 Minimap Preview for code navigation
+
 🖱️ Context Menu for quick editing actions
+
 ⌨️ Keyboard Shortcuts for faster workflow
+
 ✅ Clean, structured, and modular codebase
+
 📁 Project Structure
+
 PyPad/
 ├── main.py                # Entry point of the application
 ├── .gitignore             # Git ignore file
@@ -29,10 +41,15 @@ PyPad/
 ├── assets/                # Static resources (icons, themes, etc.)
 │   └── ...                  
 └── .git/                  # Git version control directory
+
 📦 Requirements
+
 Python 3.10+
+
 Pygments (for syntax highlighting): pip install pygments
+
 🛠️ How to Run
+
 bash
 # Clone the repository
 git clone https://github.com/sundae0/PyPad
@@ -44,7 +61,9 @@ pip install pygments
 
 # Run the application
 python main.py
+
 🌟 Supported File Types for Syntax Highlighting
+
 PyPad provides syntax highlighting for various programming and markup languages, including:
 
 Python (.py)
@@ -60,9 +79,12 @@ SQL (.sql)
 Shell scripts (.sh)
 And many more!
 The editor automatically detects the file type based on extension and applies appropriate syntax highlighting.
+
 🎨 Screenshots
+
 (Screenshots will be added here)
 
 📄 License
+
 This project is licensed under the MIT License. See LICENSE for details.
 
