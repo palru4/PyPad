@@ -114,11 +114,37 @@ class PyPad:
 
     def open_file(self):
         file_path = filedialog.askopenfilename(filetypes=[
-            ("Python Files", "*.py"),
-            ("Text Files", "*.txt"),
-            ("HTML Files", "*.html"),
-            ("CSS Files", "*.css"),
-            ("JavaScript Files", "*.js"),
+            ("Python Files", "*.py *.pyw"),
+            ("JavaScript Files", "*.js *.jsx"),
+            ("TypeScript Files", "*.ts *.tsx"),
+            ("HTML Files", "*.html *.htm *.svelte"),
+            ("CSS & Preprocessors", "*.css *.scss *.sass *.less"),
+            ("Java Files", "*.java"),
+            ("C/C++ Files", "*.c *.h *.cpp *.cc *.cxx *.hpp *.hxx"),
+            ("C#", "*.cs"),
+            ("Go", "*.go"),
+            ("Rust", "*.rs"),
+            ("Swift", "*.swift"),
+            ("Kotlin", "*.kt *.kts"),
+            ("Scala", "*.scala"),
+            ("Dart", "*.dart"),
+            ("PHP", "*.php"),
+            ("R", "*.r"),
+            ("Ruby", "*.rb"),
+            ("Perl", "*.pl"),
+            ("Lua", "*.lua"),
+            ("Groovy", "*.groovy"),
+            ("MATLAB/Objective-C", "*.matlab *.m *.mm"),
+            ("CoffeeScript", "*.coffee"),
+            ("Config/Data Files", "*.json *.yml *.yaml *.xml *.ini *.toml *.csv *.tsv"),
+            ("SQL Files", "*.sql *.pgsql *.plsql"),
+            ("Shell Scripts", "*.sh *.bash *.zsh *.fish *.ps1 *.bat *.cmd"),
+            ("Markdown & Docs", "*.md *.rst *.tex *.latex *.adoc"),
+            ("Vue & GraphQL", "*.vue *.graphql"),
+            ("Docker & Terraform", "*.dockerfile *.docker *.tf *.hcl"),
+            ("Jenkinsfile", "*.jenkinsfile"),
+            ("Assembly & Low-level", "*.asm *.s *.diff *.patch *.proto"),
+            ("Text Files", "*.txt *.log"),
             ("All Files", "*.*")
         ])
         
@@ -153,11 +179,37 @@ class PyPad:
     def save_as_file(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".txt",
             filetypes=[
-                ("Python Files", "*.py"),
-                ("Text Files", "*.txt"),
-                ("HTML Files", "*.html"),
-                ("CSS Files", "*.css"),
-                ("JavaScript Files", "*.js"),
+                ("Python Files", "*.py *.pyw"),
+                ("JavaScript Files", "*.js *.jsx"),
+                ("TypeScript Files", "*.ts *.tsx"),
+                ("HTML Files", "*.html *.htm *.svelte"),
+                ("CSS & Preprocessors", "*.css *.scss *.sass *.less"),
+                ("Java Files", "*.java"),
+                ("C/C++ Files", "*.c *.h *.cpp *.cc *.cxx *.hpp *.hxx"),
+                ("C#", "*.cs"),
+                ("Go", "*.go"),
+                ("Rust", "*.rs"),
+                ("Swift", "*.swift"),
+                ("Kotlin", "*.kt *.kts"),
+                ("Scala", "*.scala"),
+                ("Dart", "*.dart"),
+                ("PHP", "*.php"),
+                ("R", "*.r"),
+                ("Ruby", "*.rb"),
+                ("Perl", "*.pl"),
+                ("Lua", "*.lua"),
+                ("Groovy", "*.groovy"),
+                ("MATLAB/Objective-C", "*.matlab *.m *.mm"),
+                ("CoffeeScript", "*.coffee"),
+                ("Config/Data Files", "*.json *.yml *.yaml *.xml *.ini *.toml *.csv *.tsv"),
+                ("SQL Files", "*.sql *.pgsql *.plsql"),
+                ("Shell Scripts", "*.sh *.bash *.zsh *.fish *.ps1 *.bat *.cmd"),
+                ("Markdown & Docs", "*.md *.rst *.tex *.latex *.adoc"),
+                ("Vue & GraphQL", "*.vue *.graphql"),
+                ("Docker & Terraform", "*.dockerfile *.docker *.tf *.hcl"),
+                ("Jenkinsfile", "*.jenkinsfile"),
+                ("Assembly & Low-level", "*.asm *.s *.diff *.patch *.proto"),
+                ("Text Files", "*.txt *.log"),
                 ("All Files", "*.*")
             ])
             
@@ -169,6 +221,7 @@ class PyPad:
                 self.syntax_highlighter.highlight_syntax(self.text_area, file_path)
                 return True
         return False
+
 
     def toggle_dark_mode(self):
         if self.is_dark_mode:

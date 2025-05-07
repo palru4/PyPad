@@ -38,37 +38,129 @@ class SyntaxHighlighter:
         self.current_theme = self.dark_theme if is_dark_mode else self.light_theme
     
     def get_lexer_for_file(self, file_path):
-        """Get the appropriate lexer based on file extension"""
         try:
             extension = os.path.splitext(file_path)[1].lower()
             
-            # Common file extensions mapping
+            # Comprehensive file extensions mapping
             extension_map = {
+                # Programming Languages
                 '.py': lexers.PythonLexer(),
+                '.pyw': lexers.PythonLexer(),
                 '.js': lexers.JavascriptLexer(),
+                '.jsx': lexers.JsxLexer(),
+                '.ts': lexers.TypeScriptLexer(),
+                '.tsx': lexers.TypeScriptLexer(),
                 '.html': lexers.HtmlLexer(),
+                '.htm': lexers.HtmlLexer(),
                 '.css': lexers.CssLexer(),
+                '.scss': lexers.ScssLexer(),
+                '.sass': lexers.SassLexer(),
+                '.less': lexers.LessLexer(),
                 '.java': lexers.JavaLexer(),
                 '.c': lexers.CLexer(),
+                '.h': lexers.CLexer(),
                 '.cpp': lexers.CppLexer(),
+                '.cc': lexers.CppLexer(),
+                '.cxx': lexers.CppLexer(),
+                '.hpp': lexers.CppLexer(),
+                '.hxx': lexers.CppLexer(),
+                '.cs': lexers.CSharpLexer(),
+                '.go': lexers.GoLexer(),
+                '.rs': lexers.RustLexer(),
+                '.swift': lexers.SwiftLexer(),
+                '.kt': lexers.KotlinLexer(),
+                '.kts': lexers.KotlinLexer(),
+                '.scala': lexers.ScalaLexer(),
+                '.dart': lexers.DartLexer(),
+                '.php': lexers.PhpLexer(),
+                '.r': lexers.SLexer(),
+                '.rb': lexers.RubyLexer(),
+                '.pl': lexers.PerlLexer(),
+                '.lua': lexers.LuaLexer(),
+                '.groovy': lexers.GroovyLexer(),
+                '.matlab': lexers.MatlabLexer(),
+                '.m': lexers.ObjectiveCLexer(),  # Could be Objective-C or MATLAB
+                '.mm': lexers.ObjectiveCppLexer(),
+                '.coffee': lexers.CoffeeScriptLexer(),
+                
+                # Data & Config Formats
                 '.json': lexers.JsonLexer(),
-                '.md': lexers.MarkdownLexer(),
+                '.yml': lexers.YamlLexer(),
+                '.yaml': lexers.YamlLexer(),
                 '.xml': lexers.XmlLexer(),
+                '.ini': lexers.IniLexer(),
+                '.toml': lexers.TomlLexer(),
+                '.csv': lexers.SqlLexer(),  # Basic highlighting for CSV
+                '.tsv': lexers.SqlLexer(),  # Basic highlighting for TSV
+                
+                # Database
                 '.sql': lexers.SqlLexer(),
+                '.pgsql': lexers.PostgresLexer(),
+                '.plsql': lexers.PlPgsqlLexer(),
+                
+                # Shell & Scripts
                 '.sh': lexers.BashLexer(),
-                '.txt': None  # Plain text
+                '.bash': lexers.BashLexer(),
+                '.zsh': lexers.BashLexer(),
+                '.fish': lexers.FishShellLexer(),
+                '.ps1': lexers.PowerShellLexer(),
+                '.bat': lexers.BatchLexer(),
+                '.cmd': lexers.BatchLexer(),
+                
+                # Documentation & Markup
+                '.md': lexers.MarkdownLexer(),
+                '.rst': lexers.RstLexer(),
+                '.tex': lexers.TexLexer(),
+                '.latex': lexers.LatexLexer(),
+                '.adoc': lexers.AsciidocLexer(),
+                
+                # Web Development
+                '.vue': lexers.VueLexer(),
+                '.svelte': lexers.HtmlLexer(),  # Close enough for Svelte
+                '.graphql': lexers.GraphqlLexer(),
+                
+                # DevOps & Configuration
+                '.dockerfile': lexers.DockerLexer(),
+                '.docker': lexers.DockerLexer(),
+                '.tf': lexers.HclLexer(),  # Terraform
+                '.hcl': lexers.HclLexer(),
+                '.jenkinsfile': lexers.GroovyLexer(),
+                
+                # Plain Text
+                '.txt': None,
+                '.log': None,
+                
+                # Other
+                '.asm': lexers.NasmLexer(),
+                '.s': lexers.GasLexer(),
+                '.diff': lexers.DiffLexer(),
+                '.patch': lexers.DiffLexer(),
+                '.proto': lexers.ProtoBufLexer(),
             }
             
             # Return the lexer if available
             if extension in extension_map:
                 return extension_map[extension]
                 
+            # Try to get lexer by content if extension doesn't match
+            try:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read(1024)  # Read first 1KB for detection
+                    return lexers.guess_lexer(content)
+            except:
+                pass
+                
             # Try Pygments' get_lexer_for_filename as a fallback
-            return lexers.get_lexer_for_filename(file_path)
-        except:
-            # Default to None if no lexer found
+            try:
+                return lexers.get_lexer_for_filename(file_path)
+            except:
+                # Default to None if no lexer found
+                return None
+        except Exception as e:
+            # Log the error if needed
+            # print(f"Error determining lexer: {e}")
             return None
-    
+        
     def highlight_syntax(self, text_widget, file_path):
         """Apply syntax highlighting to the text in the widget"""
         # Clear any existing tags
