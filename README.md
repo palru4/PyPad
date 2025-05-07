@@ -36,7 +36,7 @@ PyPad/
 ---
 ## 📦 Requirements
 - Python 3.10+
-- Pygments (for syntax highlighting): `pip install pygments`
+- Pygments (for syntax highlighting)
 ---
 ## 🛠️ How to Run
 ```bash
