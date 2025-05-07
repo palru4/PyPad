@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, font as tkfont, ttk
 from ui.minimap import Minimap
 from dialogs.FontDialogWinStyle import FontDialogWinStyle
+from features.syntax_highlight import SyntaxHighlighter
 from features.shortcut_key import bind_shortcuts
 from ui.context_menu import setup_context_menu
 from dialogs.exit_dialog import on_exit
@@ -16,8 +17,11 @@ class PyPad:
         self.is_dark_mode = False
         self.auto_save_enabled = False
         self.file_path = None
-        self.auto_save_interval_ms = 30000  # 30 giây
+        self.auto_save_interval_ms = 30000  # 30 seconds
         self.current_font = tkfont.Font(family="Arial", size=12)
+        
+        # Initialize the syntax highlighter
+        self.syntax_highlighter = SyntaxHighlighter()
 
         self._create_widgets()
         self._create_menu()
@@ -47,8 +51,15 @@ class PyPad:
         file_menu.add_command(label="Save", command=self.save_file)
         file_menu.add_command(label="Save As", command=self.save_as_file)
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.root.quit)
+        file_menu.add_command(label="Exit", command=lambda: on_exit(self.root))
         menu_bar.add_cascade(label="File", menu=file_menu)
+
+        # Edit menu
+        edit_menu = tk.Menu(menu_bar, tearoff=0)
+        edit_menu.add_command(label="Cut", command=lambda: self.text_area.event_generate("<<Cut>>"))
+        edit_menu.add_command(label="Copy", command=lambda: self.text_area.event_generate("<<Copy>>"))
+        edit_menu.add_command(label="Paste", command=lambda: self.text_area.event_generate("<<Paste>>"))
+        menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
         # View menu
         view_menu = tk.Menu(menu_bar, tearoff=0)
@@ -91,7 +102,7 @@ class PyPad:
 
     def delete_selection(self):
         try:
-            self.text.delete("sel.first", "sel.last")
+            self.text_area.delete("sel.first", "sel.last")
         except tk.TclError:
             pass
 
@@ -102,15 +113,27 @@ class PyPad:
         self._update_status_bar()
 
     def open_file(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+        file_path = filedialog.askopenfilename(filetypes=[
+            ("Python Files", "*.py"),
+            ("Text Files", "*.txt"),
+            ("HTML Files", "*.html"),
+            ("CSS Files", "*.css"),
+            ("JavaScript Files", "*.js"),
+            ("All Files", "*.*")
+        ])
+        
         if file_path:
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
                     content = file.read()
                     self.text_area.delete(1.0, tk.END)
                     self.text_area.insert(tk.END, content)
+                    
                 self.file_path = file_path
                 self.root.title(f"PyPad - {file_path}")
+                
+                # Apply syntax highlighting
+                self.syntax_highlighter.highlight_syntax(self.text_area, file_path)
                 self._update_status_bar()
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to open file: {e}")
@@ -120,18 +143,32 @@ class PyPad:
             try:
                 with open(self.file_path, "w", encoding="utf-8") as file:
                     file.write(self.text_area.get(1.0, tk.END))
+                return True
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to save file: {e}")
+                return False
         else:
-            self.save_as_file()
+            return self.save_as_file()
 
     def save_as_file(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".txt",
-                                                 filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+            filetypes=[
+                ("Python Files", "*.py"),
+                ("Text Files", "*.txt"),
+                ("HTML Files", "*.html"),
+                ("CSS Files", "*.css"),
+                ("JavaScript Files", "*.js"),
+                ("All Files", "*.*")
+            ])
+            
         if file_path:
             self.file_path = file_path
-            self.save_file()
-            self.root.title(f"PyPad - {file_path}")
+            if self.save_file():
+                self.root.title(f"PyPad - {file_path}")
+                # Apply syntax highlighting for the newly saved file
+                self.syntax_highlighter.highlight_syntax(self.text_area, file_path)
+                return True
+        return False
 
     def toggle_dark_mode(self):
         if self.is_dark_mode:
@@ -139,6 +176,11 @@ class PyPad:
         else:
             self._apply_dark_theme()
         self.is_dark_mode = not self.is_dark_mode
+        
+        # Update syntax highlighting colors according to theme
+        self.syntax_highlighter.set_theme(self.is_dark_mode)
+        if self.file_path:
+            self.syntax_highlighter.highlight_syntax(self.text_area, self.file_path)
 
     def _apply_dark_theme(self):
         self.text_area.config(bg="#1e1e1e", fg="#d4d4d4", insertbackground="white")
@@ -146,13 +188,11 @@ class PyPad:
         self.status_bar.config(bg="#2d2d2d", fg="white")
         self.minimap.set_theme(True)
 
-
     def _apply_light_theme(self):
         self.text_area.config(bg="white", fg="black", insertbackground="black")
         self.root.config(bg="SystemButtonFace")
         self.status_bar.config(bg="SystemButtonFace", fg="black")
         self.minimap.set_theme(False)
-
 
     def toggle_auto_save(self):
         self.auto_save_enabled = self.auto_save_var.get()
@@ -184,7 +224,12 @@ class PyPad:
         font_listbox = tk.Listbox(top, listvariable=tk.StringVar(value=fonts), height=10, exportselection=False)
         font_listbox.grid(row=1, column=0, padx=5, sticky="nsew")
         font_listbox.bind("<<ListboxSelect>>", lambda e: font_var.set(fonts[font_listbox.curselection()[0]]))
-        font_listbox.selection_set(fonts.index(font_var.get()))
+        
+        # Set initial selection for the font
+        try:
+            font_listbox.selection_set(fonts.index(font_var.get()))
+        except ValueError:
+            font_listbox.selection_set(0)  # Default selection if font not found
 
         font_scroll = tk.Scrollbar(top, orient="vertical", command=font_listbox.yview)
         font_scroll.grid(row=1, column=1, sticky="ns")
@@ -206,7 +251,12 @@ class PyPad:
         size_listbox = tk.Listbox(top, listvariable=tk.StringVar(value=sizes), height=10, exportselection=False)
         size_listbox.grid(row=1, column=4, padx=5, sticky="nsew")
         size_listbox.bind("<<ListboxSelect>>", lambda e: size_var.set(sizes[size_listbox.curselection()[0]]))
-        size_listbox.selection_set(sizes.index(size_var.get()))
+        
+        # Set initial selection for size
+        try:
+            size_listbox.selection_set(sizes.index(size_var.get()))
+        except ValueError:
+            size_listbox.selection_set(2)  # Default selection if size not found
 
         size_scroll = tk.Scrollbar(top, orient="vertical", command=size_listbox.yview)
         size_scroll.grid(row=1, column=5, sticky="ns")
@@ -233,6 +283,7 @@ class PyPad:
             weight = "bold" if "Bold" in style_var.get() else "normal"
             slant = "italic" if "Italic" in style_var.get() else "roman"
             self.current_font.config(family=font_var.get(), size=int(size_var.get()), weight=weight, slant=slant)
+            self.text_area.config(font=self.current_font)
             top.destroy()
 
         tk.Button(top, text="OK", width=10, command=apply_and_close).grid(row=4, column=4, pady=10, sticky="e")
@@ -242,7 +293,6 @@ class PyPad:
         top.columnconfigure(2, weight=1)
         top.columnconfigure(4, weight=1)
 
-
     def apply_font(self, font_name, size):
         self.current_font.config(family=font_name, size=size)
-
+        self.text_area.config(font=self.current_font)
