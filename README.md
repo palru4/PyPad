@@ -4,10 +4,10 @@ A modern, lightweight Notepad clone built with Python and Tkinter, featuring syn
 ## 🚀 Features
 - 🎨 **Syntax Highlighting** for multiple programming languages
 - 🌗 **Dark/Light Theme Toggle** with theme-aware syntax highlighting
-- 🧠 **Auto-Save** support to prevent data loss
+- 💾 **Auto-Save** support to prevent data loss
 - 🗂️ **Multiple Tabs** with file management
 - 🔠 **Windows-Style Font Dialog** with live preview
-- 🧾 **Minimap Preview** for code navigation
+- 📜 **Minimap Preview** for code navigation
 - 🖱️ **Context Menu** for quick editing actions
 - ⌨️ **Keyboard Shortcuts** for faster workflow
 - ✅ Clean, structured, and modular codebase
