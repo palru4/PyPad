@@ -69,7 +69,20 @@ PyPad provides syntax highlighting for various programming and markup languages,
 The editor automatically detects the file type based on extension and applies appropriate syntax highlighting.
 ---
 ## 🎨 Screenshots
-> *(Screenshots will be added here)*
+### Find and Replace dialog
+![image](img/findandreplace.PNG)
+### Syntax highlighting for multiple programming languages, support for both light and dark mode
+
+<p align="center">
+  <img src="img/syntaxlightmode.PNG" alt="image" width="600"/><br>
+  <em>Light mode</em>
+</p>
+
+<p align="center">
+  <img src="img/syntaxdarkmode.PNG" alt="image" width="600"/><br>
+  <em>Dark mode</em>
+</p>
+
 ---
 ## 📄 License
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
