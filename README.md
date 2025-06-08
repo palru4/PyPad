@@ -69,7 +69,7 @@ PyPad provides syntax highlighting for various programming and markup languages,
 The editor automatically detects the file type based on extension and applies appropriate syntax highlighting.
 ---
 ## 🎨 Screenshots
-### Find and Replace dialog
+### Find and Replace
 
 <p align="center">
   <img src="img/findandreplace.PNG" alt="image" width="600"/><br>
