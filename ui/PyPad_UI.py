@@ -6,6 +6,7 @@ from features.syntax_highlight import SyntaxHighlighter
 from features.shortcut_key import bind_shortcuts
 from ui.context_menu import setup_context_menu
 from dialogs.exit_dialog import on_exit
+from dialogs.find_and_replace import FindReplaceDialog
 
 class PyPad:
     def __init__(self, root):
@@ -22,6 +23,8 @@ class PyPad:
         
         # Initialize the syntax highlighter
         self.syntax_highlighter = SyntaxHighlighter()
+
+        self.find_dialog = None
 
         self._create_widgets()
         self._create_menu()
@@ -59,6 +62,8 @@ class PyPad:
         edit_menu.add_command(label="Cut", command=lambda: self.text_area.event_generate("<<Cut>>"))
         edit_menu.add_command(label="Copy", command=lambda: self.text_area.event_generate("<<Copy>>"))
         edit_menu.add_command(label="Paste", command=lambda: self.text_area.event_generate("<<Paste>>"))
+        edit_menu.add_separator()
+        edit_menu.add_command(label="Find & Replace...", command=self.show_find_dialog)
         menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
         # View menu
@@ -221,6 +226,11 @@ class PyPad:
                 self.syntax_highlighter.highlight_syntax(self.text_area, file_path)
                 return True
         return False
+
+    def show_find_dialog(self):
+        if self.find_dialog is None:
+            self.find_dialog = FindReplaceDialog(self)
+        self.find_dialog.show()
 
 
     def toggle_dark_mode(self):
