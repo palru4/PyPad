@@ -70,7 +70,12 @@ The editor automatically detects the file type based on extension and applies ap
 ---
 ## 🎨 Screenshots
 ### Find and Replace dialog
-![image](img/findandreplace.PNG)
+
+<p align="center">
+  <img src="img/findandreplace.PNG" alt="image" width="600"/><br>
+  <em>Dialog of "Find and Replace"</em>
+</p>
+
 ### Syntax highlighting for multiple programming languages, support for both light and dark mode
 
 <p align="center">
