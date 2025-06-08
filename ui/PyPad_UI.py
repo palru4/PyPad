@@ -17,7 +17,7 @@ class PyPad:
         self.is_dark_mode = False
         self.auto_save_enabled = False
         self.file_path = None
-        self.auto_save_interval_ms = 30000  # 30 seconds
+        self.auto_save_interval_ms = 3000  # 3 seconds
         self.current_font = tkfont.Font(family="Arial", size=12)
         
         # Initialize the syntax highlighter
