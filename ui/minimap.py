@@ -22,15 +22,16 @@ class Minimap(tk.Canvas):
 
     def set_theme(self, dark_mode=True):
         if dark_mode:
-            bg_color = "#1e1e1e"
-            fg_color = "#cccccc"
-            vp_color = "#cccccc"
-            vp_outline = "#888888"
-        else:
-            bg_color = "#ffffff"
-            fg_color = "#000000"
+            # Tông màu đậm hơn editor một chút
+            bg_color = "#2a2a2a"      # đậm hơn editor (#1e1e1e)
+            fg_color = "#bbbbbb"
             vp_color = "#999999"
-            vp_outline = "#555555"
+            vp_outline = "#666666"
+        else:
+            bg_color = "#e8e8e8"      # nhẹ hơn trắng, dễ phân biệt
+            fg_color = "#444444"
+            vp_color = "#aaaaaa"
+            vp_outline = "#777777"
 
         self.configure(bg=bg_color)
         self.text_fg_color = fg_color
@@ -49,8 +50,6 @@ class Minimap(tk.Canvas):
                              font=self.text_font, fill=self.text_fg_color)
 
         self.draw_viewport()
-
-        # Reset modified flags to avoid trigger loop
         self.text_widget.edit_modified(False)
 
     def draw_viewport(self):
@@ -66,6 +65,4 @@ class Minimap(tk.Canvas):
 
     def scroll_to_position(self, event):
         height = int(self.text_widget.index("end-1c").split('.')[0]) * 2
-        y_ratio = event.y / max(height, 1)
-        self.text_widget.yview_moveto(y_ratio)
-        self.update_minimap()
+        y_ratio =_

@@ -1,5 +1,7 @@
-import tkinter as tk 
-from tkinter import filedialog, messagebox, font as tkfont, ttk
+import customtkinter as ctk
+from customtkinter import CTkFont
+import tkinter as tk
+from tkinter import filedialog, messagebox, font as tkfont
 from ui.minimap import Minimap
 from dialogs.FontDialogWinStyle import FontDialogWinStyle
 from features.syntax_highlight import SyntaxHighlighter
@@ -7,43 +9,74 @@ from features.shortcut_key import bind_shortcuts
 from ui.context_menu import setup_context_menu
 from dialogs.exit_dialog import on_exit
 from dialogs.find_and_replace import FindReplaceDialog
+from ui.file_explorer import FileExplorer
+import os
 
 class PyPad:
     def __init__(self, root):
         self.root = root
         self.root.title("PyPad")
         self.root.geometry("800x600")
-        root.protocol("WM_DELETE_WINDOW", lambda: on_exit(root))
+        self.root.protocol("WM_DELETE_WINDOW", lambda: on_exit(root))
 
+        ctk.set_appearance_mode("light")
+        ctk.set_default_color_theme("blue")
         self.is_dark_mode = False
         self.auto_save_enabled = False
         self.file_path = None
-        self.auto_save_interval_ms = 3000  # 3 seconds
-        self.current_font = tkfont.Font(family="Arial", size=12)
-        
-        # Initialize the syntax highlighter
+        self.auto_save_interval_ms = 3000  # 3 giây
+        self.current_font = CTkFont(family="Arial", size=12)
+
+        # Khởi tạo trình tô sáng cú pháp
         self.syntax_highlighter = SyntaxHighlighter()
 
         self.find_dialog = None
 
-        self._create_widgets()
-        self._create_menu()
-        bind_shortcuts(self)
-        setup_context_menu(self)
-        self._create_status_bar()
-        self._apply_light_theme()
-        self._start_auto_save()
+        self._create_widgets()          # tạo text + minimap
+        self._create_menu()             # tạo menu
+        bind_shortcuts(self)           # bind Ctrl+S, Ctrl+F,...
+        setup_context_menu(self)       # chuột phải
+        self._create_status_bar()      # thanh trạng thái dưới cùng
+        self._apply_light_theme()      # thiết lập theme sáng mặc định
+        self._start_auto_save()        # bắt đầu tự lưu định kỳ
 
     def _create_widgets(self):
-        self.text_frame = tk.Frame(self.root)
-        self.text_frame.pack(fill="both", expand=True)
+        self.main_frame = ctk.CTkFrame(self.root, corner_radius=0, fg_color="transparent")
+        self.main_frame.pack(fill="both", expand=True)
 
-        self.text_area = tk.Text(self.text_frame, wrap="word", font=self.current_font)
-        self.text_area.pack(side="left", fill="both", expand=True)
+        self.main_frame.grid_rowconfigure(0, weight=1)
+        self.main_frame.grid_columnconfigure(0, weight=0)
+        self.main_frame.grid_columnconfigure(1, weight=1)
+        self.main_frame.grid_columnconfigure(2, weight=0)
 
-        self.minimap = Minimap(self.text_frame, self.text_area)
-        self.minimap.pack(side="right", fill="y")
 
+        self.explorer_frame = FileExplorer(self.main_frame, self.open_file_from_explorer)
+        self.explorer_frame.grid(row=0, column=0, sticky="nsw")
+
+        self.text_area = ctk.CTkTextbox(
+            self.main_frame,
+            wrap="word",
+            font=self.current_font,
+            corner_radius=0
+        )
+        self.text_area.grid(row=0, column=1, sticky="nsew")
+
+        self.minimap = Minimap(self.main_frame, self.text_area)
+        self.minimap.grid(row=0, column=2, sticky="ns")
+
+        # Text editor
+        self.text_area = ctk.CTkTextbox(
+            self.main_frame,
+            wrap="word",
+            font=self.current_font,
+            corner_radius=0
+        )
+        self.text_area.grid(row=0, column=1, sticky="nsew")
+
+        # Minimap bên phải
+        self.minimap = Minimap(self.main_frame, self.text_area)
+        self.minimap.grid(row=0, column=2, sticky="ns")
+        
     def _create_menu(self):
         menu_bar = tk.Menu(self.root)
 
@@ -55,6 +88,7 @@ class PyPad:
         file_menu.add_command(label="Save As", command=self.save_as_file)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=lambda: on_exit(self.root))
+        file_menu.add_command(label="Open Folder", command=self.open_folder)
         menu_bar.add_cascade(label="File", menu=file_menu)
 
         # Edit menu
@@ -82,7 +116,7 @@ class PyPad:
         self.root.config(menu=menu_bar)
 
     def _create_status_bar(self):
-        self.status_bar = tk.Label(self.root, text="Ln 1, Col 1 | Words: 0 | Chars: 0", anchor="w")
+        self.status_bar = ctk.CTkLabel(self.root, text="Ln 1, Col 1 | Words: 0 | Chars: 0", anchor="w")
         self.status_bar.pack(side="bottom", fill="x")
         self.text_area.bind("<KeyRelease>", self._update_status_bar)
         self.text_area.bind("<ButtonRelease>", self._update_status_bar)
@@ -95,9 +129,9 @@ class PyPad:
             text = self.text_area.get("1.0", "end-1c")
             words = len(text.split())
             chars = len(text)
-            self.status_bar.config(text=f"Ln {line}, Col {col + 1} | Words: {words} | Chars: {chars}")
+            self.status_bar.configure(text=f"Ln {line}, Col {col + 1} | Words: {words} | Chars: {chars}")
         except:
-            self.status_bar.config(text="")
+            self.status_bar.configure(text="")
 
     def show_context_menu(self, event):
         try:
@@ -110,6 +144,23 @@ class PyPad:
             self.text_area.delete("sel.first", "sel.last")
         except tk.TclError:
             pass
+    def open_folder(self):
+        folder_path = filedialog.askdirectory()
+        if folder_path:
+            self.explorer_frame.load_directory(folder_path)
+    def open_file_from_explorer(self, file_path):
+        if os.path.isfile(file_path):
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    content = file.read()
+                self.text_area.delete("1.0", "end")
+                self.text_area.insert("1.0", content)
+                self.file_path = file_path
+                self.root.title(f"PyPad - {file_path}")
+                self.syntax_highlighter.highlight_syntax(self.text_area._textbox, file_path)
+                self._update_status_bar()
+            except Exception as e:
+                messagebox.showerror("Error", f"Could not open file:\n{e}")
 
     def new_file(self):
         self.text_area.delete(1.0, tk.END)
@@ -164,7 +215,7 @@ class PyPad:
                 self.root.title(f"PyPad - {file_path}")
                 
                 # Apply syntax highlighting
-                self.syntax_highlighter.highlight_syntax(self.text_area, file_path)
+                self.syntax_highlighter.highlight_syntax(self.text_area._textbox, file_path)
                 self._update_status_bar()
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to open file: {e}")
@@ -243,20 +294,28 @@ class PyPad:
         # Update syntax highlighting colors according to theme
         self.syntax_highlighter.set_theme(self.is_dark_mode)
         if self.file_path:
-            self.syntax_highlighter.highlight_syntax(self.text_area, self.file_path)
+            self.syntax_highlighter.highlight_syntax(self.text_area._textbox, self.file_path)
 
     def _apply_dark_theme(self):
-        self.text_area.config(bg="#1e1e1e", fg="#d4d4d4", insertbackground="white")
-        self.root.config(bg="#2d2d2d")
-        self.status_bar.config(bg="#2d2d2d", fg="white")
+        self.text_area.configure(
+            bg_color="#1e1e1e",
+            fg_color="#1e1e1e",
+            text_color="#d4d4d4"
+        )
+        self.root.configure(bg="#2d2d2d")
+        self.status_bar.configure(bg_color="#2d2d2d", text_color="white")
         self.minimap.set_theme(True)
-
+        self.explorer_frame.set_theme(True)
     def _apply_light_theme(self):
-        self.text_area.config(bg="white", fg="black", insertbackground="black")
-        self.root.config(bg="SystemButtonFace")
-        self.status_bar.config(bg="SystemButtonFace", fg="black")
+        self.text_area.configure(
+            bg_color="white",
+            fg_color="white",
+            text_color="black"
+        )
+        self.root.configure(bg="#f0f0f0")
+        self.status_bar.configure(bg_color="#f0f0f0", text_color="black")
         self.minimap.set_theme(False)
-
+        self.explorer_frame.set_theme(False)
     def toggle_auto_save(self):
         self.auto_save_enabled = self.auto_save_var.get()
         if self.auto_save_enabled and not self.file_path:
@@ -268,7 +327,7 @@ class PyPad:
         self.root.after(self.auto_save_interval_ms, self._start_auto_save)
 
     def change_font(self):
-        top = tk.Toplevel(self.root)
+        top = ctk.CTkToplevel(self.root)
         top.title("Font")
         top.resizable(False, False)
         top.grab_set()
