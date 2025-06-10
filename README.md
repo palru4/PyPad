@@ -1,7 +1,10 @@
 # 📝 PyPad
 A modern, lightweight Notepad clone built with Python and Tkinter, featuring syntax highlighting, dark mode, auto-save, multiple tabs, and a sleek Windows-style font dialog.
+
 ---
+
 ## 🚀 Features
+
 - 🎨 **Syntax Highlighting** for multiple programming languages
 - 🌗 **Dark/Light Theme Toggle** with theme-aware syntax highlighting
 - 💾 **Auto-Save** support to prevent data loss
@@ -11,8 +14,11 @@ A modern, lightweight Notepad clone built with Python and Tkinter, featuring syn
 - 🖱️ **Context Menu** for quick editing actions
 - ⌨️ **Keyboard Shortcuts** for faster workflow
 - ✅ Clean, structured, and modular codebase
+
 ---
+
 ## 📁 Project Structure
+
 ```
 PyPad/
 ├── main.py                # Entry point of the application
@@ -21,6 +27,7 @@ PyPad/
 ├── README.md              # Project documentation
 ├── dialogs/               # Dialog-related features
 │   ├── exit_dialog.py         # Custom exit confirmation dialog
+│   ├── find_and_replace.py     # Find and Replace dialog
 │   └── FontDialogWinStyle.py  # Custom font picker with preview
 ├── features/              # Utility and additional features
 │   ├── shortcut_key.py        # Keyboard shortcut bindings
@@ -28,17 +35,23 @@ PyPad/
 ├── ui/                    # UI components
 │   ├── context_menu.py        # Right-click menu
 │   ├── minimap.py             # Minimap view for text area
+│   ├── file_explorer.py       # File Explorer sidebar
 │   ├── PyPad_UI.py            # Main Notepad GUI layout
-├── assets/                # Static resources (icons, themes, etc.)
-│   └── ...                  
 └── .git/                  # Git version control directory
 ```
+
 ---
+
 ## 📦 Requirements
+
 - Python 3.10+
-- Pygments (for syntax highlighting)
+- Tkinter
+- customTkinter (for syntax highlighting)
+
 ---
+
 ## 🛠️ How to Run
+
 ```bash
 # Clone the repository
 git clone https://github.com/sundae0/PyPad
@@ -50,9 +63,13 @@ pip install -r requirements.txt
 # Run the application
 python main.py
 ```
+
 ---
+
 ## 🌟 Supported File Types for Syntax Highlighting
+
 PyPad provides syntax highlighting for various programming and markup languages, including:
+
 - Python (.py)
 - JavaScript (.js)
 - HTML (.html)
@@ -69,7 +86,9 @@ PyPad provides syntax highlighting for various programming and markup languages,
 The editor automatically detects the file type based on extension and applies appropriate syntax highlighting.
 
 ---
+
 ## 🎨 Screenshots
+
 ### Find and Replace
 
 <p align="center">
@@ -89,6 +108,15 @@ The editor automatically detects the file type based on extension and applies ap
   <em>Dark mode</em>
 </p>
 
+### Customizable fonts
+
+<p align="center">
+  <img src="img/fontdialog.PNG" alt="image" width="600"/><br>
+  <em>Font Dialog</em>
+</p>
+
 ---
+
 ## 📄 License
+
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
