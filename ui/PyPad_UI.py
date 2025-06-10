@@ -405,7 +405,7 @@ class PyPad:
         def apply_and_close():
             weight = "bold" if "Bold" in style_var.get() else "normal"
             slant = "italic" if "Italic" in style_var.get() else "roman"
-            self.current_font.config(family=font_var.get(), size=int(size_var.get()), weight=weight, slant=slant)
+            self.current_font.configure(family=font_var.get(), size=int(size_var.get()), weight=weight, slant=slant)
             self.text_area.config(font=self.current_font)
             top.destroy()
 
