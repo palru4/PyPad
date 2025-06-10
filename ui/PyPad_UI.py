@@ -11,6 +11,7 @@ from dialogs.exit_dialog import on_exit
 from dialogs.find_and_replace import FindReplaceDialog
 from ui.file_explorer import FileExplorer
 import os
+from datetime import datetime
 
 class PyPad:
     def __init__(self, root):
@@ -61,6 +62,8 @@ class PyPad:
         )
         self.text_area.grid(row=0, column=1, sticky="nsew")
 
+        self.text_area.bind("<F5>", self.insert_datetime)
+
         self.minimap = Minimap(self.main_frame, self.text_area)
         self.minimap.grid(row=0, column=2, sticky="ns")
 
@@ -76,6 +79,11 @@ class PyPad:
         # Minimap bên phải
         self.minimap = Minimap(self.main_frame, self.text_area)
         self.minimap.grid(row=0, column=2, sticky="ns")
+
+    def insert_datetime(self):
+        now=datetime.now()
+        formatted=now.strftime("%H:%M %d/%m/%y")
+        self.text_area.insert("insert", formatted)
         
     def _create_menu(self):
         menu_bar = tk.Menu(self.root)
@@ -98,6 +106,7 @@ class PyPad:
         edit_menu.add_command(label="Paste", command=lambda: self.text_area.event_generate("<<Paste>>"))
         edit_menu.add_separator()
         edit_menu.add_command(label="Find & Replace...", command=self.show_find_dialog)
+        edit_menu.add_command(label="Date and Time", command=lambda: self.insert_datetime)
         menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
         # View menu

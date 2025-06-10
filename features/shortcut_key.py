@@ -13,6 +13,7 @@ def bind_shortcuts(app):
     root.bind("<Control-z>", lambda event: app.text_area.event_generate("<<Undo>>"))
     root.bind("<Control-y>", lambda event: app.text_area.event_generate("<<Redo>>"))
     root.bind("<Control-a>", lambda event: app.text_area.event_generate("<<SelectAll>>"))
+    root.bind("<F5>", lambda event: app.insert_datetime())
     root.bind("<Control-f>", lambda event: app.show_find_dialog()) 
 
     # Exit
