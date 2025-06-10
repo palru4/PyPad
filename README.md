@@ -67,6 +67,7 @@ PyPad provides syntax highlighting for various programming and markup languages,
 - And many more!
 
 The editor automatically detects the file type based on extension and applies appropriate syntax highlighting.
+
 ---
 ## 🎨 Screenshots
 ### Find and Replace

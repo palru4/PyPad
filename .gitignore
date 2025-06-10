@@ -4,9 +4,6 @@ __pycache__/
 *$py.class
 *.pyo
 
-# Image for showcase
-img/
-
 # C extensions
 *.so
 
