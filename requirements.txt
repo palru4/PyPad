@@ -3,3 +3,5 @@
 pygments==2.15.1
 
 tk==0.1.0
+
+customtkinter==5.2.2
