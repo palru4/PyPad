@@ -50,7 +50,7 @@ class Minimap(tk.Canvas):
 
         self.draw_viewport()
 
-        # Reset cờ modified để tránh trigger lặp
+        # Reset modified flags to avoid trigger loop
         self.text_widget.edit_modified(False)
 
     def draw_viewport(self):
