@@ -148,6 +148,7 @@ class PyPad:
         folder_path = filedialog.askdirectory()
         if folder_path:
             self.explorer_frame.load_directory(folder_path)
+
     def open_file_from_explorer(self, file_path):
         if os.path.isfile(file_path):
             try:
