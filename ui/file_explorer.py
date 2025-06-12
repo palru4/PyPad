@@ -1,4 +1,5 @@
 import os
+import threading
 import tkinter as tk
 from tkinter import ttk
 import customtkinter as ctk
@@ -43,6 +44,29 @@ class FileExplorer(ctk.CTkFrame):
     def _add_dummy_node(self, node):
         self.tree.insert(node, "end", text="dummy")
 
+    def _load_directory_thread(self, parent_node, parent_path):
+        try:
+            item = os.listdir(parent_path)
+            item.sort(key=lambda x:(not os.path.isdir(os.path.join(parent_path, x)), x.lower()))
+
+            nodes_to_add = []
+            for name in item:
+                full_path = os.path.join(parent_path, name)
+                is_dir = os.path.isdir(full_path)
+                display_name = f"📁 {name}" if is_dir else f"📄 {name}"
+                nodes_to_add.append((display_name, full_path, is_dir))
+
+            def insert_items():
+                for display_name, full_path, is_dir in nodes_to_add:
+                    node = self.tree.insert(parent_node, "end", text=display_name, open=False)
+                    self.item_paths[node] = full_path
+                    if is_dir:
+                        self._add_dummy_node(node)
+
+            self.after(0, insert_items)
+        except Exception as e:
+            print("❌ Error while browsing directory:", e)
+
     def _insert_directory_contents(self, parent_node, parent_path):
         try:
             items = sorted(os.listdir(parent_path), key=lambda x: (not os.path.isdir(os.path.join(parent_path, x)), x.lower()))
@@ -68,7 +92,7 @@ class FileExplorer(ctk.CTkFrame):
         children = self.tree.get_children(node)
         if len(children) == 1 and self.tree.item(children[0], "text") == "dummy":
             self.tree.delete(children[0])
-            self._insert_directory_contents(node, path)
+            threading.Thread(target=self._load_directory_thread, args=(node, path), daemon=True).start()
 
     def on_select(self, event):
         node = self.tree.focus()
