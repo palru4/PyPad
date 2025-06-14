@@ -2,7 +2,6 @@ import customtkinter as ctk
 from customtkinter import CTkFont
 import tkinter as tk
 from tkinter import filedialog, messagebox, font as tkfont
-from ui.minimap import Minimap
 from dialogs.FontDialogWinStyle import FontDialogWinStyle
 from features.syntax_highlight import SyntaxHighlighter
 from features.shortcut_key import bind_shortcuts
@@ -64,9 +63,6 @@ class PyPad:
 
         self.text_area.bind("<F5>", self.insert_datetime)
 
-        self.minimap = Minimap(self.main_frame, self.text_area)
-        self.minimap.grid(row=0, column=2, sticky="ns")
-
         # Text editor
         self.text_area = ctk.CTkTextbox(
             self.main_frame,
@@ -75,10 +71,6 @@ class PyPad:
             corner_radius=0
         )
         self.text_area.grid(row=0, column=1, sticky="nsew")
-
-        # Minimap bên phải
-        self.minimap = Minimap(self.main_frame, self.text_area)
-        self.minimap.grid(row=0, column=2, sticky="ns")
 
     def insert_datetime(self):
         now=datetime.now()
@@ -314,7 +306,6 @@ class PyPad:
         )
         self.root.configure(bg="#2d2d2d")
         self.status_bar.configure(bg_color="#2d2d2d", text_color="white")
-        self.minimap.set_theme(True)
         self.explorer_frame.set_theme(True)
     def _apply_light_theme(self):
         self.text_area.configure(
@@ -324,7 +315,6 @@ class PyPad:
         )
         self.root.configure(bg="#f0f0f0")
         self.status_bar.configure(bg_color="#f0f0f0", text_color="black")
-        self.minimap.set_theme(False)
         self.explorer_frame.set_theme(False)
     def toggle_auto_save(self):
         self.auto_save_enabled = self.auto_save_var.get()
