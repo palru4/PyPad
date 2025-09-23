@@ -9,29 +9,12 @@
       ]
     },
     {
-      "version": "1.1",
-      "date": "2025-05-07",
-      "changes": [
-        "Support for more file extensions.",
-        "Added syntax highlighting (Pygments).",
-        "Code refactored for easier maintenance."
-      ]
-    },
-    {
       "version": "1.5",
       "date": "2025-06-08",
       "changes": [
-        "Fixed syntax highlighting bugs.",
-        "Introduced Find and Replace dialog.",
-        "Improved UI and added keyboard shortcuts."
-      ]
-    },
-    {
-      "version": "2.0-beta",
-      "date": "2025-06-10",
-      "changes": [
-        "Integrated CustomTkinter (cTk).",
-        "Beta: open folder support in file explorer."
+        "Added Find and Replace dialog.",
+        "Improved UI and added keyboard shortcuts.",
+        "Fixed syntax highlighting bugs."
       ]
     },
     {
@@ -44,14 +27,6 @@
       ]
     },
     {
-      "version": "2.1",
-      "date": "2025-06-12",
-      "changes": [
-        "Improved large file/folder handling.",
-        "Optimized file opening performance."
-      ]
-    },
-    {
       "version": "2.5",
       "date": "2025-06-14",
       "changes": [
@@ -60,7 +35,30 @@
       ]
     },
     {
-      "version": "3.1",
+      "version": "2.5.1",
+      "date": "2025-06-20",
+      "changes": [
+        "Minor bug fixes and performance improvements."
+      ]
+    },
+    {
+      "version": "3.0",
+      "date": "2025-07-01",
+      "changes": [
+        "Refactored code for better maintenance.",
+        "Improved large file handling."
+      ]
+    },
+    {
+      "version": "3.5",
+      "date": "2025-08-15",
+      "changes": [
+        "Enhanced syntax highlighting.",
+        "Updated UI with modern themes."
+      ]
+    },
+    {
+      "version": "4.0",
       "date": "2025-09-23",
       "changes": [
         "Major migration from Tkinter/cTk to PyQt5.",
