@@ -1,7 +1,11 @@
-from tkinter import messagebox
-from ui.PyPad_UI import *
+from PyQt5.QtWidgets import QMessageBox
 
-#Exit confirmation dialog
-def on_exit(root):
-    if messagebox.askokcancel("Quit", "Do you really want to quit?"):
-        root.destroy()
+def on_exit(app):
+    reply = QMessageBox.question(
+        app.root,
+        "Quit",
+        "Do you really want to quit?",
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+    )
+    if reply == QMessageBox.StandardButton.Yes:
+        app.root.close()

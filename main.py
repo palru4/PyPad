@@ -1,8 +1,9 @@
-import customtkinter as ctk 
-from ui.PyPad_UI import PyPad
+import sys
+from PyQt5.QtWidgets import QApplication
+from ui.PyPad_UI import PyPadQt
 
 if __name__ == "__main__":
-    root = ctk.CTk()
-    app = PyPad(root)
-    root.mainloop()
-
+	app = QApplication(sys.argv)
+	main_window = PyPadQt()
+	main_window.show()
+	sys.exit(app.exec())

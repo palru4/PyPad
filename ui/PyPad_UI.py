@@ -1,198 +1,168 @@
-import customtkinter as ctk
-from customtkinter import CTkFont
-import tkinter as tk
-from tkinter import filedialog, messagebox, font as tkfont
-from dialogs.FontDialogWinStyle import FontDialogWinStyle
-from features.syntax_highlight import SyntaxHighlighter
-from features.shortcut_key import bind_shortcuts
-from ui.context_menu import setup_context_menu
-from dialogs.exit_dialog import on_exit
-from dialogs.find_and_replace import FindReplaceDialog
-from ui.file_explorer import FileExplorer
+from PyQt5.QtWidgets import (
+	QApplication, QWidget, QMainWindow, QTextEdit, QVBoxLayout,
+	QHBoxLayout, QLabel, QMenuBar, QMenu, QAction, QFileDialog, QDialog,
+	QListWidget, QPushButton, QScrollBar, QComboBox
+)
+from PyQt5.QtCore import Qt, QTimer, QDateTime, pyqtSignal
+from PyQt5.QtGui import QFont, QActionEvent
+import sys
 import os
 from datetime import datetime
-import threading
 
-class PyPad:
-	def __init__(self, root):
-		self.root = root
-		self.root.title("PyPad")
-		self.root.geometry("800x600")
-		self.root.protocol("WM_DELETE_WINDOW", lambda: on_exit(root))
+# Giữ nguyên import của mấy module ngoài
+from dialogs.FontDialogWinStyle import FontDialogWinStyle
+from features.syntax_highlight import QtSyntaxHighlighter
+from features.shortcut_key import bind_shortcuts
+from ui.context_menu import setup_context_menu_qt
+from dialogs.exit_dialog import on_exit
+from dialogs.find_and_replace import FindReplaceDialog
+from ui.file_explorer import FileExplorerQt
 
-		ctk.set_appearance_mode("light")
-		ctk.set_default_color_theme("blue")
+
+class PyPadQt(QMainWindow):
+	def __init__(self):
+		super().__init__()
+		self.setWindowTitle("PyPad")
+		self.resize(800, 600)
+
 		self.is_dark_mode = False
 		self.auto_save_enabled = False
 		self.file_path = None
-		self.auto_save_interval_ms = 3000  # 3 giây
-		self.current_font = CTkFont(family="Arial", size=12)
+		self.auto_save_interval_ms = 3000
+		self.current_font = QFont("Arial", 12)
 
-		# Khởi tạo trình tô sáng cú pháp
-		self.syntax_highlighter = SyntaxHighlighter()
-
+		self.text_area = QTextEdit()
+		self.syntax_highlighter = QtSyntaxHighlighter(self.text_area.document())
 		self.find_dialog = None
 
-		self._create_widgets()          # tạo text + minimap
-		self._create_menu()             # tạo menu
-		bind_shortcuts(self)           # bind Ctrl+S, Ctrl+F,...
-		setup_context_menu(self)       # chuột phải
-		self._create_status_bar()      # thanh trạng thái dưới cùng
-		self._apply_light_theme()      # thiết lập theme sáng mặc định
-		self._start_auto_save()        # bắt đầu tự lưu định kỳ
+		self._create_widgets()
+		self._create_menu()
+		bind_shortcuts(self)
+		setup_context_menu_qt(self)
+		self._create_status_bar()
+		self._apply_light_theme()
+		self._start_auto_save()
 
 	def _create_widgets(self):
-		self.main_frame = ctk.CTkFrame(self.root, corner_radius=0, fg_color="transparent")
-		self.main_frame.pack(fill="both", expand=True)
+		central = QWidget()
+		self.setCentralWidget(central)
+		layout = QHBoxLayout()
+		central.setLayout(layout)
 
-		self.main_frame.grid_rowconfigure(0, weight=1)
-		self.main_frame.grid_columnconfigure(0, weight=0)
-		self.main_frame.grid_columnconfigure(1, weight=1)
-		self.main_frame.grid_columnconfigure(2, weight=0)
-
-
-		self.explorer_frame = FileExplorer(self.main_frame, self.open_file_from_explorer)
-		self.explorer_frame.grid(row=0, column=0, sticky="nsw")
-
-		self.text_area = ctk.CTkTextbox(
-			self.main_frame,
-			wrap="word",
-			font=self.current_font,
-			corner_radius=0
-		)
-		self.text_area.grid(row=0, column=1, sticky="nsew")
-
-		self.text_area.bind("<F5>", self.insert_datetime)
+		# File explorer
+		self.explorer_frame = FileExplorerQt(self, self.open_file_from_explorer)
+		layout.addWidget(self.explorer_frame, 1)
 
 		# Text editor
-		self.text_area = ctk.CTkTextbox(
-			self.main_frame,
-			wrap="word",
-			font=self.current_font,
-			corner_radius=0
-		)
-		self.text_area.grid(row=0, column=1, sticky="nsew")
+		self.current_font = QFont("Consolas", 12)
+		self.text_area.setFont(self.current_font)
+		self.text_area.textChanged.connect(self._update_status_bar)
+		layout.addWidget(self.text_area, 3)
 
-	def insert_datetime(self):
-		now=datetime.now()
-		formatted=now.strftime("%H:%M %d/%m/%y")
-		self.text_area.insert("insert", formatted)
-		
 	def _create_menu(self):
-		menu_bar = tk.Menu(self.root)
+		menu_bar = self.menuBar()
 
 		# File menu
-		file_menu = tk.Menu(menu_bar, tearoff=0)
-		file_menu.add_command(label="New File", command=self.new_file)
-		file_menu.add_command(label="Open", command=self.open_file)
-		file_menu.add_command(label="Save", command=self.save_file)
-		file_menu.add_command(label="Save As", command=self.save_as_file)
-		file_menu.add_separator()
-		file_menu.add_command(label="Exit", command=lambda: on_exit(self.root))
-		file_menu.add_command(label="Open Folder", command=self.open_folder)
-		menu_bar.add_cascade(label="File", menu=file_menu)
+		file_menu = menu_bar.addMenu("File")
+		new_action = QAction("New File", self)
+		new_action.triggered.connect(self.new_file)
+		file_menu.addAction(new_action)
+
+		open_action = QAction("Open", self)
+		open_action.triggered.connect(self.open_file)
+		file_menu.addAction(open_action)
+
+		save_action = QAction("Save", self)
+		save_action.triggered.connect(self.save_file)
+		file_menu.addAction(save_action)
+
+		save_as_action = QAction("Save As", self)
+		save_as_action.triggered.connect(self.save_as_file)
+		file_menu.addAction(save_as_action)
+
+		file_menu.addSeparator()
+
+		exit_action = QAction("Exit", self)
+		exit_action.triggered.connect(lambda: on_exit(self))
+		file_menu.addAction(exit_action)
+
+		open_folder_action = QAction("Open Folder", self)
+		open_folder_action.triggered.connect(self.open_folder)
+		file_menu.addAction(open_folder_action)
 
 		# Edit menu
-		edit_menu = tk.Menu(menu_bar, tearoff=0)
-		edit_menu.add_command(label="Cut", command=lambda: self.text_area.event_generate("<<Cut>>"))
-		edit_menu.add_command(label="Copy", command=lambda: self.text_area.event_generate("<<Copy>>"))
-		edit_menu.add_command(label="Paste", command=lambda: self.text_area.event_generate("<<Paste>>"))
-		edit_menu.add_separator()
-		edit_menu.add_command(label="Find & Replace...", command=self.show_find_dialog)
-		edit_menu.add_command(label="Date and Time", command=lambda: self.insert_datetime)
-		menu_bar.add_cascade(label="Edit", menu=edit_menu)
+		edit_menu = menu_bar.addMenu("Edit")
+		cut_action = QAction("Cut", self)
+		cut_action.triggered.connect(self.text_area.cut)
+		edit_menu.addAction(cut_action)
+
+		copy_action = QAction("Copy", self)
+		copy_action.triggered.connect(self.text_area.copy)
+		edit_menu.addAction(copy_action)
+
+		paste_action = QAction("Paste", self)
+		paste_action.triggered.connect(self.text_area.paste)
+		edit_menu.addAction(paste_action)
+
+		edit_menu.addSeparator()
+
+		find_action = QAction("Find and Replace...", self)
+		find_action.triggered.connect(self.show_find_dialog)
+		edit_menu.addAction(find_action)
+
+		datetime_action = QAction("Date and Time", self)
+		datetime_action.triggered.connect(self.insert_datetime)
+		edit_menu.addAction(datetime_action)
 
 		# View menu
-		view_menu = tk.Menu(menu_bar, tearoff=0)
-		view_menu.add_command(label="Toggle Dark Mode", command=self.toggle_dark_mode)
-		view_menu.add_command(label="Change Font", command=self.change_font)
-		menu_bar.add_cascade(label="View", menu=view_menu)
+		view_menu = menu_bar.addMenu("View")
+		dark_mode_action = QAction("Toggle Dark Mode", self)
+		dark_mode_action.triggered.connect(self.toggle_dark_mode)
+		view_menu.addAction(dark_mode_action)
+
+		font_action = QAction("Change Font", self)
+		font_action.triggered.connect(self.change_font)
+		view_menu.addAction(font_action)
 
 		# Options menu
-		self.auto_save_var = tk.BooleanVar(value=self.auto_save_enabled)
-		options_menu = tk.Menu(menu_bar, tearoff=0)
-		options_menu.add_checkbutton(label="Enable Auto-Save", onvalue=True, offvalue=False,
-									 variable=self.auto_save_var, command=self.toggle_auto_save)
-		menu_bar.add_cascade(label="Options", menu=options_menu)
-
-		self.root.config(menu=menu_bar)
+		options_menu = menu_bar.addMenu("Options")
+		self.auto_save_action = QAction("Enable Auto-Save", self, checkable=True)
+		self.auto_save_action.triggered.connect(self.toggle_auto_save)
+		options_menu.addAction(self.auto_save_action)
 
 	def _create_status_bar(self):
-		self.status_bar = ctk.CTkLabel(self.root, text="Ln 1, Col 1 | Words: 0 | Chars: 0", anchor="w")
-		self.status_bar.pack(side="bottom", fill="x")
-		self.text_area.bind("<KeyRelease>", self._update_status_bar)
-		self.text_area.bind("<ButtonRelease>", self._update_status_bar)
+		self.status_bar = self.statusBar()
 		self._update_status_bar()
 
-	def _update_status_bar(self, event=None):
-		try:
-			pos = self.text_area.index(tk.INSERT)
-			line, col = map(int, pos.split('.'))
-			text = self.text_area.get("1.0", "end-1c")
-			words = len(text.split())
-			chars = len(text)
-			self.status_bar.configure(text=f"Ln {line}, Col {col + 1} | Words: {words} | Chars: {chars}")
-		except:
-			self.status_bar.configure(text="")
+	def _update_status_bar(self):
+		cursor = self.text_area.textCursor()
+		line = cursor.blockNumber() + 1
+		col = cursor.columnNumber() + 1
+		text = self.text_area.toPlainText()
+		words = len(text.split())
+		chars = len(text)
+		self.status_bar.showMessage(f"Ln {line}, Col {col} | Words: {words} | Chars: {chars}")
 
-	def show_context_menu(self, event):
-		try:
-			self.context_menu.tk_popup(event.x_root, event.y_root)
-		finally:
-			self.context_menu.grab_release()
-
-	def delete_selection(self):
-		try:
-			self.text_area.delete("sel.first", "sel.last")
-		except tk.TclError:
-			pass
+	def insert_datetime(self):
+		now = QDateTime.currentDateTime().toString("HH:mm dd/MM/yy")
+		self.text_area.insertPlainText(now)
+		cursor = self.text_area.textCursor()
+		cursor.movePosition(cursor.MoveOperation.End)
+		self.text_area.setTextCursor(cursor)
 
 	def open_folder(self):
-		folder_path = filedialog.askdirectory()
+		folder_path = QFileDialog.getExistingDirectory(self, "Select Folder")
 		if folder_path:
 			self.explorer_frame.load_directory(folder_path)
 
 	def new_file(self):
-		self.text_area.delete(1.0, tk.END)
+		self.text_area.clear()
 		self.file_path = None
-		self.root.title("PyPad - Untitled")
+		self.setWindowTitle("PyPad - Untitled")
 		self._update_status_bar()
 
 	def open_file(self):
-		file_path = filedialog.askopenfilename(filetypes=[
-			("Python Files", "*.py *.pyw"),
-			("JavaScript Files", "*.js *.jsx"),
-			("TypeScript Files", "*.ts *.tsx"),
-			("HTML Files", "*.html *.htm *.svelte"),
-			("CSS & Preprocessors", "*.css *.scss *.sass *.less"),
-			("Java Files", "*.java"),
-			("C/C++ Files", "*.c *.h *.cpp *.cc *.cxx *.hpp *.hxx"),
-			("C#", "*.cs"),
-			("Go", "*.go"),
-			("Rust", "*.rs"),
-			("Swift", "*.swift"),
-			("Kotlin", "*.kt *.kts"),
-			("Scala", "*.scala"),
-			("Dart", "*.dart"),
-			("PHP", "*.php"),
-			("R", "*.r"),
-			("Ruby", "*.rb"),
-			("Perl", "*.pl"),
-			("Lua", "*.lua"),
-			("Groovy", "*.groovy"),
-			("MATLAB/Objective-C", "*.matlab *.m *.mm"),
-			("CoffeeScript", "*.coffee"),
-			("Config/Data Files", "*.json *.yml *.yaml *.xml *.ini *.toml *.csv *.tsv"),
-			("SQL Files", "*.sql *.pgsql *.plsql"),
-			("Shell Scripts", "*.sh *.bash *.zsh *.fish *.ps1 *.bat *.cmd"),
-			("Markdown & Docs", "*.md *.rst *.tex *.latex *.adoc"),
-			("Vue & GraphQL", "*.vue *.graphql"),
-			("Docker & Terraform", "*.dockerfile *.docker *.tf *.hcl"),
-			("Jenkinsfile", "*.jenkinsfile"),
-			("Assembly & Low-level", "*.asm *.s *.diff *.patch *.proto"),
-			("Text Files", "*.txt *.log"),
-			("All Files", "*.*")
-		])
+		file_path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*.*)")
 		if file_path:
 			self.load_file_content(file_path)
 
@@ -202,151 +172,45 @@ class PyPad:
 
 	def load_file_content(self, file_path):
 		try:
-			with open(file_path, "r", encoding="utf-8") as file:
-				content = file.read()
-
-			self.text_area.delete("1.0", tk.END)
-			self.text_area.insert("1.0", content)
-
+			with open(file_path, "r", encoding="utf-8") as f:
+				content = f.read()
+			# set text, lưu file_path, cập nhật title/status
+			self.text_area.setPlainText(content)
 			self.file_path = file_path
-			self.root.title(f"PyPad - {file_path}")
+			self.setWindowTitle(f"PyPad - {file_path}")
 
-			# Highlight toàn bộ hoặc một phần tùy độ dài
-			line_count = int(self.text_area.index("end-1c").split('.')[0])
-			if line_count <= 1000 or not hasattr(self.syntax_highlighter, "highlight_partial"):
-				self.syntax_highlighter.highlight_syntax(self.text_area._textbox, file_path)
-			else:
-				self.syntax_highlighter.highlight_partial(self.text_area._textbox, file_path, max_lines=500)
+			# đừng gọi hàm không tồn tại — dùng set_file của highlighter
+			# đảm bảo highlighter đã được tạo và attach vào self.text_area.document()
+			if hasattr(self, "syntax_highlighter") and self.syntax_highlighter is not None:
+				self.syntax_highlighter.set_file(file_path)
 
 			self._update_status_bar()
-
 		except Exception as e:
-			messagebox.showerror("Error", f"Could not open file:\n{e}")
-
-
-	# def open_file_from_explorer(self, file_path):
-	#     if os.path.isfile(file_path):
-	#         try:
-	#             with open(file_path, "r", encoding="utf-8") as file:
-	#                 content = file.read()
-	#             self.text_area.delete("1.0", "end")
-	#             self.text_area.insert("1.0", content)
-	#             self.file_path = file_path
-	#             self.root.title(f"PyPad - {file_path}")
-	#             self.syntax_highlighter.highlight_syntax(self.text_area._textbox, file_path)
-	#             self._update_status_bar()
-	#         except Exception as e:
-	#             messagebox.showerror("Error", f"Could not open file:\n{e}")
-
-
-
-	# def open_file(self):
-	#     file_path = filedialog.askopenfilename(filetypes=[
-	#         ("Python Files", "*.py *.pyw"),
-	#         ("JavaScript Files", "*.js *.jsx"),
-	#         ("TypeScript Files", "*.ts *.tsx"),
-	#         ("HTML Files", "*.html *.htm *.svelte"),
-	#         ("CSS & Preprocessors", "*.css *.scss *.sass *.less"),
-	#         ("Java Files", "*.java"),
-	#         ("C/C++ Files", "*.c *.h *.cpp *.cc *.cxx *.hpp *.hxx"),
-	#         ("C#", "*.cs"),
-	#         ("Go", "*.go"),
-	#         ("Rust", "*.rs"),
-	#         ("Swift", "*.swift"),
-	#         ("Kotlin", "*.kt *.kts"),
-	#         ("Scala", "*.scala"),
-	#         ("Dart", "*.dart"),
-	#         ("PHP", "*.php"),
-	#         ("R", "*.r"),
-	#         ("Ruby", "*.rb"),
-	#         ("Perl", "*.pl"),
-	#         ("Lua", "*.lua"),
-	#         ("Groovy", "*.groovy"),
-	#         ("MATLAB/Objective-C", "*.matlab *.m *.mm"),
-	#         ("CoffeeScript", "*.coffee"),
-	#         ("Config/Data Files", "*.json *.yml *.yaml *.xml *.ini *.toml *.csv *.tsv"),
-	#         ("SQL Files", "*.sql *.pgsql *.plsql"),
-	#         ("Shell Scripts", "*.sh *.bash *.zsh *.fish *.ps1 *.bat *.cmd"),
-	#         ("Markdown & Docs", "*.md *.rst *.tex *.latex *.adoc"),
-	#         ("Vue & GraphQL", "*.vue *.graphql"),
-	#         ("Docker & Terraform", "*.dockerfile *.docker *.tf *.hcl"),
-	#         ("Jenkinsfile", "*.jenkinsfile"),
-	#         ("Assembly & Low-level", "*.asm *.s *.diff *.patch *.proto"),
-	#         ("Text Files", "*.txt *.log"),
-	#         ("All Files", "*.*")
-	#     ])
-		
-	#     if file_path:
-	#         try:
-	#             with open(file_path, "r", encoding="utf-8") as file:
-	#                 content = file.read()
-	#                 self.text_area.delete(1.0, tk.END)
-	#                 self.text_area.insert(tk.END, content)
-					
-	#             self.file_path = file_path
-	#             self.root.title(f"PyPad - {file_path}")
-				
-	#             # Apply syntax highlighting
-	#             self.syntax_highlighter.highlight_syntax(self.text_area._textbox, file_path)
-	#             self._update_status_bar()
-	#         except Exception as e:
-	#             messagebox.showerror("Error", f"Failed to open file: {e}")
+			from PyQt5.QtWidgets import QMessageBox
+			QMessageBox.critical(self, "Error", f"Could not open file:\n{e}")
 
 	def save_file(self):
 		if self.file_path:
 			try:
-				with open(self.file_path, "w", encoding="utf-8") as file:
-					file.write(self.text_area.get(1.0, tk.END))
+				with open(self.file_path, "w", encoding="utf-8") as f:
+					f.write(self.text_area.toPlainText())
 				return True
 			except Exception as e:
-				messagebox.showerror("Error", f"Failed to save file: {e}")
+				from PyQt5.QtWidgets import QMessageBox
+				QMessageBox.critical(self, "Error", f"Failed to save file: {e}")
 				return False
 		else:
 			return self.save_as_file()
-
-	def save_as_file(self):
-		file_path = filedialog.asksaveasfilename(defaultextension=".txt",
-			filetypes=[
-				("Python Files", "*.py *.pyw"),
-				("JavaScript Files", "*.js *.jsx"),
-				("TypeScript Files", "*.ts *.tsx"),
-				("HTML Files", "*.html *.htm *.svelte"),
-				("CSS & Preprocessors", "*.css *.scss *.sass *.less"),
-				("Java Files", "*.java"),
-				("C/C++ Files", "*.c *.h *.cpp *.cc *.cxx *.hpp *.hxx"),
-				("C#", "*.cs"),
-				("Go", "*.go"),
-				("Rust", "*.rs"),
-				("Swift", "*.swift"),
-				("Kotlin", "*.kt *.kts"),
-				("Scala", "*.scala"),
-				("Dart", "*.dart"),
-				("PHP", "*.php"),
-				("R", "*.r"),
-				("Ruby", "*.rb"),
-				("Perl", "*.pl"),
-				("Lua", "*.lua"),
-				("Groovy", "*.groovy"),
-				("MATLAB/Objective-C", "*.matlab *.m *.mm"),
-				("CoffeeScript", "*.coffee"),
-				("Config/Data Files", "*.json *.yml *.yaml *.xml *.ini *.toml *.csv *.tsv"),
-				("SQL Files", "*.sql *.pgsql *.plsql"),
-				("Shell Scripts", "*.sh *.bash *.zsh *.fish *.ps1 *.bat *.cmd"),
-				("Markdown & Docs", "*.md *.rst *.tex *.latex *.adoc"),
-				("Vue & GraphQL", "*.vue *.graphql"),
-				("Docker & Terraform", "*.dockerfile *.docker *.tf *.hcl"),
-				("Jenkinsfile", "*.jenkinsfile"),
-				("Assembly & Low-level", "*.asm *.s *.diff *.patch *.proto"),
-				("Text Files", "*.txt *.log"),
-				("All Files", "*.*")
-			])
 			
+	def save_as_file(self):
+		file_path, _ = QFileDialog.getSaveFileName(self, "Save File As", "", "All Files (*.*)")
 		if file_path:
 			self.file_path = file_path
 			if self.save_file():
-				self.root.title(f"PyPad - {file_path}")
-				# Apply syntax highlighting for the newly saved file
-				self.syntax_highlighter.highlight_syntax(self.text_area, file_path)
+				self.setWindowTitle(f"PyPad - {file_path}")
+				# update highlighter to use new file extension / lexer
+				if hasattr(self, "syntax_highlighter") and self.syntax_highlighter is not None:
+					self.syntax_highlighter.set_file(file_path)
 				return True
 		return False
 
@@ -355,136 +219,102 @@ class PyPad:
 			self.find_dialog = FindReplaceDialog(self)
 		self.find_dialog.show()
 
-
 	def toggle_dark_mode(self):
 		if self.is_dark_mode:
 			self._apply_light_theme()
 		else:
 			self._apply_dark_theme()
+
 		self.is_dark_mode = not self.is_dark_mode
-		
-		# Update syntax highlighting colors according to theme
+
+		# chỉ đổi theme
 		self.syntax_highlighter.set_theme(self.is_dark_mode)
+
+		# nếu có file thì rehighlight lại
 		if self.file_path:
-			self.syntax_highlighter.highlight_syntax(self.text_area._textbox, self.file_path)
+			self.syntax_highlighter.set_file(self.file_path)
 
 	def _apply_dark_theme(self):
-		self.text_area.configure(
-			bg_color="#1e1e1e",
-			fg_color="#1e1e1e",
-			text_color="#d4d4d4"
-		)
-		self.root.configure(bg="#2d2d2d")
-		self.status_bar.configure(bg_color="#2d2d2d", text_color="white")
+		self.text_area.setStyleSheet("background-color:#1e1e1e; color:#d4d4d4")
+		self.status_bar.setStyleSheet("background-color:#2d2d2d; color:white")
 		self.explorer_frame.set_theme(True)
+		self.centralWidget().setStyleSheet("background-color:#2d2d2d;")
+
+		# menu bar + menu items
+		self.menuBar().setStyleSheet("""
+			QMenuBar {
+				background-color: #2d2d2d;
+				color: white;
+			}
+			QMenuBar::item {
+				background: transparent;
+				padding: 4px 10px;
+			}
+			QMenuBar::item:selected {
+				background: #444444;   /* hover màu xám đậm */
+			}
+			QMenu {
+				background-color: #2d2d2d;
+				color: white;
+			}
+			QMenu::item:selected {
+				background-color: #444444;  /* hover item trong menu */
+			}
+		""")
+
 	def _apply_light_theme(self):
-		self.text_area.configure(
-			bg_color="white",
-			fg_color="white",
-			text_color="black"
-		)
-		self.root.configure(bg="#f0f0f0")
-		self.status_bar.configure(bg_color="#f0f0f0", text_color="black")
+		self.text_area.setStyleSheet("background-color:white; color:black")
+		self.status_bar.setStyleSheet("background-color:#f0f0f0; color:black")
 		self.explorer_frame.set_theme(False)
+		self.centralWidget().setStyleSheet("background-color:#f0f0f0;")
+
+		self.menuBar().setStyleSheet("""
+			QMenuBar {
+				background-color: #f0f0f0;
+				color: black;
+			}
+			QMenuBar::item {
+				background: transparent;
+				padding: 4px 10px;
+			}
+			QMenuBar::item:selected {
+				background: #dcdcdc;  /* hover xám nhạt */
+			}
+			QMenu {
+				background-color: #f0f0f0;
+				color: black;
+			}
+			QMenu::item:selected {
+				background-color: #dcdcdc;
+			}
+		""")
+
+
+
 	def toggle_auto_save(self):
-		self.auto_save_enabled = self.auto_save_var.get()
+		self.auto_save_enabled = self.auto_save_action.isChecked()
 		if self.auto_save_enabled and not self.file_path:
 			self.save_as_file()
 
 	def _start_auto_save(self):
 		if self.auto_save_enabled and self.file_path:
 			self.save_file()
-		self.root.after(self.auto_save_interval_ms, self._start_auto_save)
+		QTimer.singleShot(self.auto_save_interval_ms, self._start_auto_save)
 
 	def change_font(self):
-		top = ctk.CTkToplevel(self.root)
-		top.title("Font")
-		top.resizable(False, False)
-		top.grab_set()
+		# Callback để áp dụng font khi bấm OK
+		def apply_font(name, size, style):
+			weight = "bold" if "Bold" in style else "normal"
+			slant = "italic" if "Italic" in style else "roman"
 
-		fonts = list(tkfont.families())
-		fonts.sort()
-		styles = ["Regular", "Italic", "Bold", "Bold Italic"]
-		sizes = [str(s) for s in range(8, 30, 2)]
+			font = QFont(name, size)
+			font.setWeight(QFont.Bold if weight=="bold" else QFont.Normal)
+			font.setItalic(slant=="italic")
 
-		font_var = tk.StringVar(value=self.current_font.actual("family"))
-		style_var = tk.StringVar(value="Regular")
-		size_var = tk.StringVar(value=str(self.current_font.actual("size")))
+			self.text_area.setFont(font)
+			self.current_font = font
 
-		# Font list
-		tk.Label(top, text="Font:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
-		font_listbox = tk.Listbox(top, listvariable=tk.StringVar(value=fonts), height=10, exportselection=False)
-		font_listbox.grid(row=1, column=0, padx=5, sticky="nsew")
-		font_listbox.bind("<<ListboxSelect>>", lambda e: font_var.set(fonts[font_listbox.curselection()[0]]))
-		
-		# Set initial selection for the font
-		try:
-			font_listbox.selection_set(fonts.index(font_var.get()))
-		except ValueError:
-			font_listbox.selection_set(0)  # Default selection if font not found
+		# Tạo dialog với font hiện tại và callback
+		dialog = FontDialogWinStyle(self, self.current_font, apply_font)
+		dialog.show()
 
-		font_scroll = tk.Scrollbar(top, orient="vertical", command=font_listbox.yview)
-		font_scroll.grid(row=1, column=1, sticky="ns")
-		font_listbox.config(yscrollcommand=font_scroll.set)
-
-		# Style list
-		tk.Label(top, text="Font style:").grid(row=0, column=2, sticky="w", padx=5, pady=2)
-		style_listbox = tk.Listbox(top, listvariable=tk.StringVar(value=styles), height=10, exportselection=False)
-		style_listbox.grid(row=1, column=2, padx=5, sticky="nsew")
-		style_listbox.bind("<<ListboxSelect>>", lambda e: style_var.set(styles[style_listbox.curselection()[0]]))
-		style_listbox.selection_set(0)
-
-		style_scroll = tk.Scrollbar(top, orient="vertical", command=style_listbox.yview)
-		style_scroll.grid(row=1, column=3, sticky="ns")
-		style_listbox.config(yscrollcommand=style_scroll.set)
-
-		# Size list
-		tk.Label(top, text="Size:").grid(row=0, column=4, sticky="w", padx=5, pady=2)
-		size_listbox = tk.Listbox(top, listvariable=tk.StringVar(value=sizes), height=10, exportselection=False)
-		size_listbox.grid(row=1, column=4, padx=5, sticky="nsew")
-		size_listbox.bind("<<ListboxSelect>>", lambda e: size_var.set(sizes[size_listbox.curselection()[0]]))
-		
-		# Set initial selection for size
-		try:
-			size_listbox.selection_set(sizes.index(size_var.get()))
-		except ValueError:
-			size_listbox.selection_set(2)  # Default selection if size not found
-
-		size_scroll = tk.Scrollbar(top, orient="vertical", command=size_listbox.yview)
-		size_scroll.grid(row=1, column=5, sticky="ns")
-		size_listbox.config(yscrollcommand=size_scroll.set)
-
-		# Sample
-		tk.Label(top, text="Sample").grid(row=2, column=0, columnspan=5, sticky="w", padx=5, pady=(10, 2))
-		sample_label = tk.Label(top, text="AaBbYyZz", relief="solid", width=20, height=3)
-		sample_label.grid(row=3, column=0, columnspan=6, padx=5, pady=5)
-
-		def update_sample(*args):
-			weight = "bold" if "Bold" in style_var.get() else "normal"
-			slant = "italic" if "Italic" in style_var.get() else "roman"
-			sample_font = tkfont.Font(family=font_var.get(), size=int(size_var.get()), weight=weight, slant=slant)
-			sample_label.config(font=sample_font)
-
-		font_var.trace_add("write", update_sample)
-		style_var.trace_add("write", update_sample)
-		size_var.trace_add("write", update_sample)
-		update_sample()
-
-		# OK & Cancel buttons
-		def apply_and_close():
-			weight = "bold" if "Bold" in style_var.get() else "normal"
-			slant = "italic" if "Italic" in style_var.get() else "roman"
-			self.current_font.configure(family=font_var.get(), size=int(size_var.get()), weight=weight, slant=slant)
-			self.text_area.config(font=self.current_font)
-			top.destroy()
-
-		tk.Button(top, text="OK", width=10, command=apply_and_close).grid(row=4, column=4, pady=10, sticky="e")
-		tk.Button(top, text="Cancel", width=10, command=top.destroy).grid(row=4, column=5, pady=10, sticky="w")
-
-		top.columnconfigure(0, weight=1)
-		top.columnconfigure(2, weight=1)
-		top.columnconfigure(4, weight=1)
-
-	def apply_font(self, font_name, size):
-		self.current_font.config(family=font_name, size=size)
-		self.text_area.config(font=self.current_font)

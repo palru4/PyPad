@@ -1,20 +1,22 @@
+from PyQt5.QtWidgets import QShortcut
+from PyQt5.QtGui import QKeySequence
+
 def bind_shortcuts(app):
-    root = app.root  # Lấy cửa sổ chính
     # File
-    root.bind("<Control-n>", lambda event: app.new_file())
-    root.bind("<Control-o>", lambda event: app.open_file())
-    root.bind("<Control-s>", lambda event: app.save_file())
-    root.bind("<Control-Shift-S>", lambda event: app.save_file_as())
+    QShortcut(QKeySequence("Ctrl+N"), app, activated=app.new_file)
+    QShortcut(QKeySequence("Ctrl+O"), app, activated=app.open_file)
+    QShortcut(QKeySequence("Ctrl+S"), app, activated=app.save_file)
+    QShortcut(QKeySequence("Ctrl+Shift+S"), app, activated=app.save_as_file)
 
     # Edit
-    root.bind("<Control-x>", lambda event: app.text_area.event_generate("<<Cut>>"))
-    root.bind("<Control-c>", lambda event: app.text_area.event_generate("<<Copy>>"))
-    root.bind("<Control-v>", lambda event: app.text_area.event_generate("<<Paste>>"))
-    root.bind("<Control-z>", lambda event: app.text_area.event_generate("<<Undo>>"))
-    root.bind("<Control-y>", lambda event: app.text_area.event_generate("<<Redo>>"))
-    root.bind("<Control-a>", lambda event: app.text_area.event_generate("<<SelectAll>>"))
-    root.bind("<F5>", lambda event: app.insert_datetime())
-    root.bind("<Control-f>", lambda event: app.show_find_dialog()) 
+    QShortcut(QKeySequence("Ctrl+X"), app.text_area, activated=lambda: app.text_area.cut())
+    QShortcut(QKeySequence("Ctrl+C"), app.text_area, activated=lambda: app.text_area.copy())
+    QShortcut(QKeySequence("Ctrl+V"), app.text_area, activated=lambda: app.text_area.paste())
+    QShortcut(QKeySequence("Ctrl+Z"), app.text_area, activated=lambda: app.text_area.undo())
+    QShortcut(QKeySequence("Ctrl+Y"), app.text_area, activated=lambda: app.text_area.redo())
+    QShortcut(QKeySequence("Ctrl+A"), app.text_area, activated=lambda: app.text_area.selectAll())
+    QShortcut(QKeySequence("F5"), app, activated=app.insert_datetime)
+    QShortcut(QKeySequence("Ctrl+F"), app, activated=app.show_find_dialog)
 
     # Exit
-    root.bind("<Control-q>", lambda event: app.on_exit())
+    QShortcut(QKeySequence("Ctrl+Q"), app, activated=app.close)
