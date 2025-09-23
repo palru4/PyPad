@@ -1,0 +1,73 @@
+{
+  "project": "PyPad",
+  "releases": [
+    {
+      "version": "1.0",
+      "date": "2025-05-05",
+      "changes": [
+        "Initial release with basic text editing (Tkinter)."
+      ]
+    },
+    {
+      "version": "1.1",
+      "date": "2025-05-07",
+      "changes": [
+        "Support for more file extensions.",
+        "Added syntax highlighting (Pygments).",
+        "Code refactored for easier maintenance."
+      ]
+    },
+    {
+      "version": "1.5",
+      "date": "2025-06-08",
+      "changes": [
+        "Fixed syntax highlighting bugs.",
+        "Introduced Find and Replace dialog.",
+        "Improved UI and added keyboard shortcuts."
+      ]
+    },
+    {
+      "version": "2.0-beta",
+      "date": "2025-06-10",
+      "changes": [
+        "Integrated CustomTkinter (cTk).",
+        "Beta: open folder support in file explorer."
+      ]
+    },
+    {
+      "version": "2.0",
+      "date": "2025-06-10",
+      "changes": [
+        "Completed folder explorer support.",
+        "Added Insert Date/Time.",
+        "Updated keyboard shortcuts."
+      ]
+    },
+    {
+      "version": "2.1",
+      "date": "2025-06-12",
+      "changes": [
+        "Improved large file/folder handling.",
+        "Optimized file opening performance."
+      ]
+    },
+    {
+      "version": "2.5",
+      "date": "2025-06-14",
+      "changes": [
+        "Removed minimap.",
+        "Added multithreading for file handling."
+      ]
+    },
+    {
+      "version": "3.1",
+      "date": "2025-09-23",
+      "changes": [
+        "Major migration from Tkinter/cTk to PyQt5.",
+        "Redesigned UI (modern dark/light themes).",
+        "Fixed config-related bugs.",
+        "Refined and polished features."
+      ]
+    }
+  ]
+}
