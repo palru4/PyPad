@@ -9,10 +9,11 @@ import sys
 import os
 from datetime import datetime
 
-# Giữ nguyên import của mấy module ngoài
+# Component
 from dialogs.FontDialogWinStyle import FontDialogWinStyle
 from features.syntax_highlight import QtSyntaxHighlighter
 from features.shortcut_key import bind_shortcuts
+from features.hash_menu import create_hash_menu, update_hash_menu_theme
 from ui.context_menu import setup_context_menu_qt
 from dialogs.exit_dialog import on_exit
 from dialogs.find_and_replace import FindReplaceDialog
@@ -124,6 +125,9 @@ class PyPadQt(QMainWindow):
 		font_action.triggered.connect(self.change_font)
 		view_menu.addAction(font_action)
 
+		# Tools menu
+		create_hash_menu(self)
+
 		# Options menu
 		options_menu = menu_bar.addMenu("Options")
 		self.auto_save_action = QAction("Enable Auto-Save", self, checkable=True)
@@ -174,13 +178,10 @@ class PyPadQt(QMainWindow):
 		try:
 			with open(file_path, "r", encoding="utf-8") as f:
 				content = f.read()
-			# set text, lưu file_path, cập nhật title/status
 			self.text_area.setPlainText(content)
 			self.file_path = file_path
 			self.setWindowTitle(f"PyPad - {file_path}")
 
-			# đừng gọi hàm không tồn tại — dùng set_file của highlighter
-			# đảm bảo highlighter đã được tạo và attach vào self.text_area.document()
 			if hasattr(self, "syntax_highlighter") and self.syntax_highlighter is not None:
 				self.syntax_highlighter.set_file(file_path)
 
@@ -227,12 +228,14 @@ class PyPadQt(QMainWindow):
 
 		self.is_dark_mode = not self.is_dark_mode
 
-		# chỉ đổi theme
+		# just change theme
 		self.syntax_highlighter.set_theme(self.is_dark_mode)
 
-		# nếu có file thì rehighlight lại
+		# If file is opening --> re-highlight it
 		if self.file_path:
 			self.syntax_highlighter.set_file(self.file_path)
+
+		update_hash_menu_theme(self)
 
 	def _apply_dark_theme(self):
 		self.text_area.setStyleSheet("background-color:#1e1e1e; color:#d4d4d4")
@@ -302,7 +305,7 @@ class PyPadQt(QMainWindow):
 		QTimer.singleShot(self.auto_save_interval_ms, self._start_auto_save)
 
 	def change_font(self):
-		# Callback để áp dụng font khi bấm OK
+		# Callback to apply when press "OK"
 		def apply_font(name, size, style):
 			weight = "bold" if "Bold" in style else "normal"
 			slant = "italic" if "Italic" in style else "roman"
@@ -314,7 +317,7 @@ class PyPadQt(QMainWindow):
 			self.text_area.setFont(font)
 			self.current_font = font
 
-		# Tạo dialog với font hiện tại và callback
+		# Create dialog with current font and callback
 		dialog = FontDialogWinStyle(self, self.current_font, apply_font)
 		dialog.show()
 

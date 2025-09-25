@@ -68,6 +68,22 @@
         "Fixed config-related bugs.",
         "Refined and polished features."
       ]
+    },
+    {
+      "version": "4.1",
+      "date": "2025-09-25",
+      "changes": [
+        "Add hash menu tools (beta)."
+      ]
+    },
+    {
+      "version": "5.0",
+      "date": "2025-09-25",
+      "changes": [
+        "Offcially add hash menu tools.",
+        "Improved UI",
+        "Many bugs have been fixed."
+      ]
     }
   ]
 }

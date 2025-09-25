@@ -8,7 +8,7 @@ def setup_context_menu_qt(app):
     menu.addAction("Paste", app.text_area.paste)
     menu.addAction("Select All", app.text_area.selectAll)
 
-    # Bật context menu tùy chỉnh
+    # Enable custom context menu
     app.text_area.setContextMenuPolicy(Qt.CustomContextMenu)
 
     def show_context_menu(point):
