@@ -7,6 +7,7 @@ class FontDialogWinStyle(QDialog):
         self.setWindowTitle("Font")
         self.setModal(True)
         self.apply_callback = apply_callback
+        self.setFixedSize(520, 340)
 
         # Font list, style list, size list
         self.font_list = QListWidget()
@@ -25,7 +26,8 @@ class FontDialogWinStyle(QDialog):
 
         # Sample preview
         self.sample_label = QLabel("AaBbYyZz")
-        self.sample_label.setMinimumHeight(40)
+        self.sample_label.setMinimumHeight(50)
+        self.sample_label.setStyleSheet("border: 1px solid gray; padding: 8px;")
         self.sample_label.setFont(current_font)
 
         # Buttons
@@ -33,7 +35,29 @@ class FontDialogWinStyle(QDialog):
         self.cancel_button = QPushButton("Cancel")
 
         # Layouts
+        # grid = QGridLayout()
+        # grid.addWidget(QLabel("Font:"), 0, 0)
+        # grid.addWidget(QLabel("Style:"), 0, 1)
+        # grid.addWidget(QLabel("Size:"), 0, 2)
+
+        # grid.addWidget(self.font_list, 1, 0)
+        # grid.addWidget(self.style_list, 1, 1)
+        # grid.addWidget(self.size_list, 1, 2)
+
+        # vbox = QVBoxLayout()
+        # vbox.addLayout(grid)
+        # vbox.addWidget(QLabel("Sample:"))
+        # vbox.addWidget(self.sample_label)
+
+        # hbox = QHBoxLayout()
+        # hbox.addWidget(self.ok_button)
+        # hbox.addWidget(self.cancel_button)
+        # vbox.addLayout(hbox)
+
         grid = QGridLayout()
+        grid.setHorizontalSpacing(12)
+        grid.setVerticalSpacing(6)
+
         grid.addWidget(QLabel("Font:"), 0, 0)
         grid.addWidget(QLabel("Style:"), 0, 1)
         grid.addWidget(QLabel("Size:"), 0, 2)
@@ -42,6 +66,10 @@ class FontDialogWinStyle(QDialog):
         grid.addWidget(self.style_list, 1, 1)
         grid.addWidget(self.size_list, 1, 2)
 
+        grid.setColumnStretch(0, 3)
+        grid.setColumnStretch(1, 2)
+        grid.setColumnStretch(2, 1)
+        
         vbox = QVBoxLayout()
         vbox.addLayout(grid)
         vbox.addWidget(QLabel("Sample:"))
@@ -51,8 +79,8 @@ class FontDialogWinStyle(QDialog):
         hbox.addWidget(self.ok_button)
         hbox.addWidget(self.cancel_button)
         vbox.addLayout(hbox)
-
         self.setLayout(vbox)
+        vbox.setContentsMargins(10, 10, 10, 10)
 
         # Select current font
         current_family = current_font.family()
